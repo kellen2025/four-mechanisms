@@ -115,11 +115,21 @@ bash scripts/install.sh
 
 ## ⚠️ 使用限制
 
-### 硬性要求
+### 环境要求
 
-- Linux 或 macOS（不支持Windows，可用WSL2）
-- bash环境
-- Python 3.10+（如果用Hindsight插件）
+| 系统 | 支持状态 | 说明 |
+|------|----------|------|
+| Linux | ✅ 完全支持 | 推荐 |
+| macOS | ✅ 完全支持 | 推荐 |
+| Windows | ⚠️ 需额外步骤 | 见下方说明 |
+
+### Windows使用方式
+
+| 方式 | 复杂度 | 说明 |
+|------|--------|------|
+| **WSL2** | 简单 | 安装WSL2后与Linux完全一致 |
+| **Git Bash** | 简单 | Windows自带，支持bash脚本 |
+| **手动安装** | 中等 | 不走脚本，直接复制文件 |
 
 ### 已知限制
 
@@ -127,7 +137,6 @@ bash scripts/install.sh
 |------|------|----------|
 | 国内安装Hindsight | 需要下载模型 | 设置 `HF_ENDPOINT=https://hf-mirror.com` |
 | 首次加载慢 | Hindsight需加载模型 | 约10-30秒，后续正常 |
-| 不支持Windows | 安装脚本依赖bash | 使用WSL2或Docker |
 
 ---
 
