@@ -1,0 +1,98 @@
+# 铁壁四规 配置文件
+# 复制此文件为 config.yaml 并按需修改
+
+# ============================================
+# 基础配置
+# ============================================
+
+# 技能名称
+name: four-mechanisms
+
+# 版本号
+version: 4.0.0
+
+# 平台（hermes/openclaw，安装时自动检测）
+# platform: hermes
+
+# ============================================
+# 铁壁一：马诺防线配置
+# ============================================
+
+mano:
+  # 代码检查工具
+  tools:
+    python:
+      - ruff
+      - mypy
+      - pytest
+    dart:
+      - dart_analyze
+      - flutter_test
+  
+  # pre-commit钩子
+  pre_commit: true
+
+# ============================================
+# 铁壁二：图书馆配置
+# ============================================
+
+tushuguan:
+  # 文档根目录（相对于平台目录）
+  root: tushuguan
+  
+  # 分类目录
+  categories:
+    - 机制
+    - 方案
+    - 项目
+    - 会议
+    - 备份
+
+# ============================================
+# 铁壁三：历史书配置
+# ============================================
+
+history_book:
+  # L1 MEMORY.md配置
+  l1:
+    # 字节限值（中文每字3字节）
+    limit_default: 4000    # 主控Agent
+    limit_subagent: 2000   # 子Agent
+  
+  # L2层配置
+  l2:
+    # 插件类型（hindsight/null/自定义插件名）
+    plugin: hindsight
+    
+    # Hindsight配置（plugin=hindsight时生效）
+    hindsight:
+      bank_id: hermes
+      port: 9177
+      # LLM配置（用于实体提取等）
+      llm_api_key: ""  # 需要填写
+  
+  # L3层配置（session_search，无需额外配置）
+
+# ============================================
+# 铁壁四：工蚁配置
+# ============================================
+
+worker_ant:
+  # 子Agent配置
+  delegation:
+    child_timeout_seconds: 1800
+    max_iterations: 50
+    max_concurrent_children: 3
+    max_spawn_depth: 1
+
+# ============================================
+# 通知配置（可选）
+# ============================================
+
+# notifications:
+#   telegram:
+#     enabled: false
+#     chat_id: ""
+#   discord:
+#     enabled: false
+#     channel: ""
