@@ -1,7 +1,7 @@
 ---
 name: four-mechanisms
 description: "铁壁四规：马诺防线（代码三关校验）、图书馆（v4科学管理+日期准确性）、历史书（三层记忆L1/L2/L3+L2插件化）、工蚁（多Agent协作+OPC一人公司）。所有Agent必须遵守。"
-version: 3.6.1
+version: 3.6.2
 category: devops
 metadata:
   hermes:
@@ -15,9 +15,195 @@ metadata:
 
 ---
 
+## 适用场景
+
+**适合使用铁壁四规的场景：**
+
+| 场景 | 说明 | 适用机制 |
+|------|------|---------|
+| AI Agent开发项目 | 使用Hermes/OpenClaw进行多Agent协作 | 全部四规 |
+| 个人开发者/一人公司 | 需要AI团队协作，但只有一个人 | 工蚁+历史书 |
+| Flutter/Dart/Python项目 | 需要代码质量保障 | 马诺防线 |
+| 多会话连续工作 | 需要跨会话记忆和知识积累 | 历史书+图书馆 |
+| 内容创作项目 | 多Agent分工协作（写作/设计/运营） | 工蚁 |
+| 复杂项目管理 | 需要任务调度、进度跟踪、文档管理 | 全部四规 |
+
+**不太适合的场景：**
+
+| 场景 | 原因 | 建议 |
+|------|------|------|
+| 纯前端项目（不涉及AI Agent） | 铁壁四规依赖Hermes/OpenClaw平台 | 直接使用代码编辑器即可 |
+| 简单一次性任务 | 引入四规增加复杂度 | 直接用hermes chat |
+| 非中文项目 | 四规文档和Pitfall以中文为主 | 参考机制思路，自行实现 |
+| 无多Agent协作需求 | 工蚁机制无法发挥作用 | 只使用马诺防线+图书馆 |
+
+**核心价值**：让一个人通过AI Agent团队，像公司一样高效运作（One Person Company模式）。
+
+## 快速上手（5分钟）
+
+### 第1步：安装（1分钟）
+
+```bash
+# 下载并安装
+unzip four-mechanisms-v4.1.1.zip -d /tmp/
+cd /tmp/four-mechanisms-generic
+bash install.sh
+```
+
+### 第2步：验证安装（1分钟）
+
+```bash
+# 检查四规是否加载
+skill_view(name='four-mechanisms')
+
+# 检查Memory占用
+wc -c ~/.hermes/memories/MEMORY.md
+```
+
+### 第3步：试用铁壁一 — 代码校验（2分钟）
+
+```bash
+# 查看校验工具状态
+bash ~/.hermes/scripts/mano_status.sh
+
+# 对代码文件执行三关校验（示例）
+bash ~/.hermes/scripts/mano_engine.sh validate "test" "default" "your_script.py"
+```
+
+### 第4步：试用铁壁二 — 文档管理（1分钟）
+
+```bash
+# 查看图书馆结构
+ls ~/.hermes/tushuguan/
+
+# 创建一个文档（会自动按规范存放）
+echo "---\ntitle: 测试文档\ncreated: $(date +%Y-%m-%d)\nstatus: active\n---\n# 测试" > ~/.hermes/tushuguan/项目/测试项目/$(date +%Y-%m-%d)/test.md
+```
+
+### 第5步：试用铁壁四 — 任务队列（1分钟）
+
+```bash
+# 添加任务到队列
+bash ~/.hermes/scripts/worker-ant-queue.sh add '设计用户登录页面'
+
+# 查看进度看板
+bash ~/.hermes/scripts/worker-ant-dashboard.sh
+```
+
+**完成！** 你已经掌握了四规的基本用法。更多功能请参考下方各机制详解。
+
+---
+
+## 常见问题（FAQ）
+
+### Q1: 安装后skill没有自动加载怎么办？
+
+**A:** 铁壁四规通过SOUL.md注入指令，每次新会话自动执行。如果未加载：
+
+```bash
+# 手动加载
+skill_view(name='four-mechanisms')
+
+# 检查SOUL.md是否包含加载指令
+cat ~/.hermes/SOUL.md | grep -i "four-mechanisms"
+```
+
+如果SOUL.md缺少加载指令，手动添加：
+```bash
+echo -e "\n# 铁壁四规加载指令\nskill_view(name='four-mechanisms')" >> ~/.hermes/SOUL.md
+```
+
+### Q2: Memory占用超过80%怎么办？系统不会自动压缩吗？
+
+**A:** Hermes官方确认Memory**不会自动压缩**。达到100%时会直接报错，必须Agent自己清理。
+
+**手动压缩方法：**
+```bash
+# 1. 查看当前占用
+wc -c ~/.hermes/memories/MEMORY.md
+
+# 2. 在会话中让Agent执行压缩（自动识别并清理低优先级条目）
+# 或手动编辑 MEMORY.md，删除非LOCKED的过时条目
+```
+
+### Q3: 工蚁的任务队列和Kanban有什么区别？
+
+**A:** 工蚁是Kanban的上层封装：
+
+| 功能 | Kanban（原生） | 工蚁（封装） |
+|------|---------------|-------------|
+| 创建任务 | `hermes kanban create --assignee xxx` | `worker-ant-queue.sh add '任务描述'` |
+| Agent分配 | 手动指定profile | 关键词自动匹配 |
+| 优先级 | 手动设置数字 | 自动推断（紧急/重要/普通） |
+| 进度查看 | `hermes kanban list` | `worker-ant-dashboard.sh`（可视化） |
+
+**建议**：简单任务用工蚁，复杂任务用Kanban原生命令。
+
+### Q4: 马诺防线只支持Flutter/Dart/Python吗？
+
+**A:** 马诺防线的三关校验工具（ruff/pytest/pre-commit）主要支持Python。Flutter/Dart通过dart analyze支持。其他语言可以：
+
+1. 只使用安全扫描关（pre-commit支持多语言）
+2. 自定义校验脚本替换mano_engine.sh
+3. 只使用图书馆管理文档，跳过代码校验
+
+### Q5: 图书馆的5个分类怎么选？
+
+**A:** 快速判断规则：
+
+```
+这个文件是框架级规则吗？ → 机制/
+这个文件是设计方案吗？ → 方案/
+这个文件给用户看吗？ → 项目/
+这个文件是会议记录吗？ → 会议/
+这个文件是备份吗？ → 备份/
+```
+
+**常见错误**：把项目产出放到home根目录 → 必须放到 `~/.hermes/tushuguan/项目/<项目名>/`
+
+### Q6: Hindsight（L2记忆）可以不用吗？
+
+**A:** 可以。铁壁四规的L2层是可插拔的：
+
+```yaml
+# config.yaml中设置
+memory:
+  provider: null  # 不使用L2，只用L1+L3
+```
+
+不用Hindsight时，三层架构变为两层（L1热缓存 + L3冷存储），功能降级但不影响基本使用。
+
+### Q7: 遇到问题怎么排查？
+
+**A:** 按以下顺序排查：
+
+```bash
+# 1. 检查四规是否加载
+skill_view(name='four-mechanisms')
+
+# 2. 检查Memory占用
+wc -c ~/.hermes/memories/MEMORY.md
+
+# 3. 检查马诺防线工具
+bash ~/.hermes/scripts/mano_status.sh
+
+# 4. 检查图书馆结构
+ls ~/.hermes/tushuguan/
+
+# 5. 检查工蚁脚本
+ls ~/.hermes/scripts/worker-ant-*.sh
+```
+
+如果问题仍未解决，查看参考文件中的详细文档：
+```bash
+ls ~/.hermes/skills/four-mechanisms/references/
+```
+
+---
+
 ## 安装与部署
 
-**⚠️ 双平台支持**：v4.0.0 起，安装脚本自动检测 Hermes Agent 或 OpenClaw 并选择正确路径。发布包：`four-mechanisms-v4.0.0.zip`。
+**⚠️ 双平台支持**：v4.0.0 起，安装脚本自动检测 Hermes Agent 或 OpenClaw 并选择正确路径。发布包：`four-mechanisms-v4.1.1.zip`。
 
 ### 一键安装（推荐）
 
@@ -95,6 +281,35 @@ ls ~/.openclaw/tushuguan/07-规章制度/铁壁四规/
    Worker按任务体执行 → kanban_complete → 自动升ready
   ↓
 ④ 米宝验证产出 → 构建产物 → 交付用户
+```
+
+### 实际操作示例
+
+**场景：你写了一个Python脚本，想确保代码质量**
+
+```bash
+# 1. 查看校验工具是否就绪
+bash ~/.hermes/scripts/mano_status.sh
+# 输出：ruff 0.15.15 ✓  mypy 1.9.0 ✓  pytest 9.0.3 ✓  pre-commit 4.6.0 ✓
+
+# 2. 让Agent执行代码审查（在会话中说）
+# "审查 my_script.py 的代码质量"
+
+# 3. Agent会自动执行：
+#    - ruff check（代码风格）
+#    - mypy（类型检查）
+#    - pytest（测试）
+#    - pre-commit（安全扫描）
+
+# 4. 如果全部通过，Agent会交付结果
+# 如果有失败，Agent会自动修复后重试（最多3次）
+```
+
+**场景：你用Flutter开发，想检查Dart代码**
+
+```bash
+# Agent会自动使用dart analyze替代ruff
+# 在会话中说："审查 lib/main.dart"
 ```
 
 ---
@@ -239,6 +454,41 @@ refs:
 ```
 
 **文档生命周期**：draft → active → archived → obsolete
+
+### 实际操作示例
+
+**场景：创建一个项目文档**
+
+```bash
+# 1. 先确认日期（必须！）
+date  # 输出：2026年 06月 20日 星期六 20:30:00 CST
+
+# 2. 创建目录并写入文档
+mkdir -p ~/.hermes/tushuguan/项目/我的游戏/2026-06-20
+cat > ~/.hermes/tushuguan/项目/我的游戏/2026-06-20/设计文档.md << 'EOF'
+---
+title: 游戏设计文档
+created: 2026-06-20
+author: Kellan
+category: 项目
+status: active
+---
+# 游戏设计文档
+
+## 核心玩法
+...
+EOF
+
+# 3. 更新INDEX.md（在会话中让Agent执行）
+# "更新图书馆索引，新增项目文档"
+```
+
+**场景：文档归档**
+
+```bash
+# 在会话中说："把设计文档标记为archived"
+# Agent会自动移动到 ~/.hermes/tushuguan/归档/ 目录
+```
 
 ---
 
@@ -503,6 +753,42 @@ mkdir ~/my-project
 
 **Cron**：每天09:00自动检查（Job ID: a78f92301730）
 
+### 实际操作示例
+
+**场景：查看当前Memory状态**
+
+```bash
+# 查看MEMORY.md占用
+wc -c ~/.hermes/memories/MEMORY.md
+# 输出：2386 /home/kellen/.hermes/memories/MEMORY.md
+
+# 查看USER.md占用
+wc -c ~/.hermes/memories/USER.md
+```
+
+**场景：Memory超过80%需要压缩**
+
+```bash
+# 在会话中告诉Agent：
+# "Memory占用率过高，请执行压缩流程"
+
+# Agent会自动：
+# 1. 检查哪些条目可以被recall找到（可迁移到L2）
+# 2. 执行 hindsight_retain() 迁移
+# 3. 从MEMORY.md删除已迁移条目
+# 4. 确保降到70%以下
+```
+
+**场景：使用Hindsight检索历史记忆**
+
+```bash
+# 在会话中说：
+# "查一下之前关于XXX的历史记录"
+
+# Agent会自动调用 hindsight_recall(query="XXX")
+# 基于检索结果回答，而不是凭空猜测
+```
+
 ---
 
 ## 铁壁四：子Agent超时应对 — 工蚁
@@ -566,6 +852,49 @@ delegate_task(goal="构建REST API", background=true)
 - 目标循环模式（`--goal`，自动重试直到完成）
 
 **设计文档：** `~/.hermes/tushuguan/项目/four-mechanisms/2026-06-20/core/worker-ant-v2-beta.md`
+
+### 实际操作示例
+
+**场景：添加任务到队列**
+
+```bash
+# 自动匹配Agent（关键词路由）
+bash ~/.hermes/scripts/worker-ant-queue.sh add '设计用户登录页面'
+# 输出：Agent: 毙杀(产品经理) (mibao-kills-pm)
+
+# 指定Agent
+bash ~/.hermes/scripts/worker-ant-queue.sh add --agent coder '修复登录Bug'
+# 输出：Agent: 码仔(编码工程师) (mibao-kellen-coder)
+
+# 紧急任务
+bash ~/.hermes/scripts/worker-ant-queue.sh add '紧急修复线上崩溃'
+# 输出：优先级: 1（紧急）
+```
+
+**场景：查看进度看板**
+
+```bash
+bash ~/.hermes/scripts/worker-ant-dashboard.sh
+# 输出：
+# ╔══════════════════════════════════════╗
+# ║     🐜 工蚁进度看板 v2.0-beta       ║
+# ╚══════════════════════════════════════╝
+#
+#   总计: 3 个任务
+#   进度: [████████░░░░░░░░░░░░] 40% (1/3)
+#
+#   🔄 执行中 (1)
+#   ─────────────────────────────────
+#   ⚪ [t_abc123] 设计用户登录页面 (2m前)
+#      └─ 👤 pm
+#
+#   📋 待执行 (2)
+#   ─────────────────────────────────
+#   ⚪ [t_def456] 修复工蚁队列Bug (1m前)
+#      └─ 👤 coder
+#   🔴 [t_ghi789] 紧急修复支付回调 (30s前)
+#      └─ 👤 coder
+```
 
 ---
 
