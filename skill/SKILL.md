@@ -1,7 +1,7 @@
 ---
 name: four-mechanisms
 description: "铁壁四规：马诺防线（代码三关校验）、图书馆（v4科学管理+日期准确性）、历史书（三层记忆L1/L2/L3+L2插件化）、工蚁（多Agent协作+OPC一人公司）。所有Agent必须遵守。"
-version: 3.6.0
+version: 3.6.1
 category: devops
 metadata:
   hermes:
@@ -279,9 +279,10 @@ L3 冷存储：session_search (FTS5)    — 全自动存储，按需检索
 
 > 官方默认：MEMORY 2,200字符 / USER 1,375字符。我们覆盖为字节限值以容纳中文（每字3字节）。
 
-**两层防护**：
-- 预警压缩（80%）：超过上限的80%触发自动压缩
-- 硬限制（100%）：达到上限后系统拒绝写入
+**限值防护（无自动压缩）**：
+- ⚠️ Hermes官方确认：Memory**不会自动压缩**，80%预警线仅是我们的策略建议，需Agent主动执行
+- 硬限制（100%）：达到上限后系统拒绝写入，Agent必须自己清理后再重试
+- Agent需在每次会话开始时主动检查`wc -c`，超80%时主动压缩
 
 **LOCKED规则**：
 - MEMORY.md和USER.md首行`# LOCKED — 以下条目压缩时禁止触碰`
@@ -375,6 +376,27 @@ Agent准备写入
 
 `hermes memory setup`可能会重置provider为"built-in only"。设置后必须重新执行 `hermes config set memory.provider <provider>`。
 
+### Pitfall：禁止声称系统功能存在但未经验证（2026-06-20发现）
+
+Agent容易把自定义规则误认为系统内置功能。例如：铁壁四规定义了"80%预警自动压缩"，Agent误以为这是Hermes的内置行为，实际上Memory不会自动压缩（官方文档明确说 "Memory does not auto-compact"）。
+
+**强制规则：声称任何系统功能存在前，必须先查官方文档验证。**
+
+错误做法：
+```
+❌ "系统会自动处理"（未验证是否有此功能）
+❌ 将自定义规则等同于系统内置行为
+```
+
+正确做法：
+```
+✅ 先查文档确认功能是否存在
+✅ 区分"我们的策略"和"系统能力"
+✅ 不确定时明确告知用户"这是我们定义的规则，不是系统内置的"
+```
+
+**根因：** Agent容易混淆"规范定义的行为"和"系统的实际行为"。规范是约束Agent的，系统是实际运行的。两者可能不一致。
+
 ### Pitfall：Hindsight dotenv路径陷阱（2026-06-17发现）
 
 Hindsight daemon的工作目录(CWD)是 `/home/kellen`，python-dotenv 从CWD向上搜索.env。`~/.hermes/.env` 不在搜索路径上。
@@ -386,6 +408,33 @@ Hindsight daemon的工作目录(CWD)是 `/home/kellen`，python-dotenv 从CWD向
 Hindsight需要下载bge-small-en-v1.5和ms-marco-MiniLM-L-6-v2两个HF模型。国内无法连接huggingface.co。
 
 **解决方案**：设置 `HF_ENDPOINT=https://hf-mirror.com`（国内唯一可用镜像）。
+
+### Pitfall：bash脚本必须显式处理--help（2026-06-20 工蚁阶段2发现）
+
+bash脚本的参数解析中，如果case语句有`*) break` catch-all但没处理`--help|-h`，用户传入`--help`会被当作任务文本而非帮助标志。
+
+**正确做法：**
+```bash
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h) usage; exit 0 ;;
+        --agent|-a) ... ;;
+        *) break ;;
+    esac
+done
+```
+
+**错误做法：**
+```bash
+case "$1" in
+    --agent|-a) ... ;;
+    *) break ;;  # --help会fall through到这里
+esac
+```
+
+### Pitfall：kanban任务会被dispatcher自动claim
+
+Hermes kanban的dispatcher每60s自动claim ready任务，状态从ready变为running。创建任务后如果立刻看状态，可能已经是running而非ready。reclaim可将running任务退回ready。
 
 ### Pitfall：项目产出必须按图书馆规范存放（2026-06-19用户纠正）
 
@@ -496,6 +545,27 @@ delegate_task(goal="构建REST API", background=true)
 - `background=true` 仅用于**独立任务**（不需要中途交互）
 - 需要用户确认的任务仍用同步模式
 - 子代理完成后自动将结果注入新对话轮次
+
+### 工蚁v2.0-beta：任务队列 + 进度看板（阶段2，2026-06-20完成）
+
+**脚本**（`~/.hermes/scripts/`）：
+
+| 脚本 | 用途 |
+|------|------|
+| `worker-ant-queue.sh add <任务描述>` | 添加任务到队列（自动匹配Agent） |
+| `worker-ant-queue.sh run` | 执行队列中下一个ready任务 |
+| `worker-ant-queue.sh status` | 查看队列状态统计 |
+| `worker-ant-queue.sh dashboard` | 进度看板（终端可视化） |
+| `worker-ant-dashboard.sh` | 独立进度看板脚本 |
+
+**功能：**
+- 智能Agent匹配（关键词路由，复用阶段1）
+- 优先级自动推断（紧急🔴/重要🟡/普通⚪）
+- Kanban卡片创建（任务持久化到SQLite）
+- 进度看板（进度条 + 按状态分组 + 等待时间）
+- 目标循环模式（`--goal`，自动重试直到完成）
+
+**设计文档：** `~/.hermes/tushuguan/项目/four-mechanisms/2026-06-20/core/worker-ant-v2-beta.md`
 
 ---
 
@@ -813,4 +883,5 @@ zip -r skill-vX.Y.Z.zip . -x ".git/*" "VERSION" "LICENSE"
 | v3.5.0 | 2026-06-19 | 铁壁三更名为"历史书"、铁壁四更名为"工蚁"；新增用户铁律：历史问题必须先hindsight_recall()再回答（禁止凭空猜测）；新增references/trace-evaluation-system.md（SkillHub TRACE评测体系）；新增references/universal-skill-packaging.md（通用Skill打包模式）；铁壁三架构总览改为"可插拔工具层"；新增概念澄清：铁壁四规与L2工具是"规范指定工具"关系而非"包含"关系；新增references/l2-pluggable-architecture.md（L2层可插拔架构设计方案：插件化、收益对比、实施步骤） |
 | v3.5.1 | 2026-06-19 | 新增references/trace-evaluation-framework.md（SkillHub TRACE评测体系T/R/A/C/E五维度）；新增references/memory-migration-lessons.md（记忆迁移教训：备份文件必须retain到L2、历史查询必须先recall）；新增Pitfall：历史查询必须先recall；新增Pitfall：备份/会议纪要必须迁移关键信息到L2；新增references/daily-memory-consolidation.md（每日20:00三层记忆整理工作流）；新增references/hindsight-redundancy-management.md（冗余类型/评估标准/预防流程） |
 | v3.5.2 | 2026-06-19 | 铁壁二（图书馆）新增文件存放铁律：所有项目产出必须按图书馆分类存放（~/.hermes/tushuguan/项目/），禁止放到home根目录；新增检查清单（分类判断→路径验证→INDEX更新） |
-| v3.6.0 | 2026-06-20 | v0.17.0能力整合：铁壁四（工蚁）新增后台异步子代理规范；铁壁三（历史书）新增内存批量原子操作；铁壁一（马诺防线）新增read_file提取.ipynb/.docx/.xlsx能力；铁壁二（图书馆）新增文件系统回滚保护；新增references/v0.17-new-capabilities.md；启用video_gen工具（Agnes Video V2.0） |
+| v3.6.0 | 2026-06-20 | v0.17.0能力整合+工蚁阶段2+Memory修正
+| v3.6.1 | 2026-06-20 | 新增Pitfall：bash--help处理+kanban自动claim；新增references/worker-ant-v2-beta-implementation.md：铁壁四（工蚁）新增后台异步子代理规范；铁壁三（历史书）新增内存批量原子操作；铁壁一（马诺防线）新增read_file提取.ipynb/.docx/.xlsx能力；铁壁二（图书馆）新增文件系统回滚保护；新增references/v0.17-new-capabilities.md；启用video_gen工具（Agnes Video V2.0）；铁壁四（工蚁）新增阶段2任务队列+进度看板（worker-ant-queue.sh/worker-ant-dashboard.sh）；新增Pitfall：禁止声称系统功能存在但未经验证（Memory无自动压缩）；铁壁三（历史书）修正"两层防护"为"限值防护（无自动压缩）" |
