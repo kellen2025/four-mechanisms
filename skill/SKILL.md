@@ -1,7 +1,7 @@
 ---
 name: four-mechanisms
 description: "铁壁四规：马诺防线（代码三关校验）、图书馆（v4科学管理+日期准确性）、历史书（三层记忆L1/L2/L3+L2插件化）、工蚁（多Agent协作+OPC一人公司）。所有Agent必须遵守。"
-version: 3.6.2
+version: 3.6.3
 category: devops
 metadata:
   hermes:
@@ -45,7 +45,7 @@ metadata:
 
 ```bash
 # 下载并安装
-unzip four-mechanisms-v4.1.1.zip -d /tmp/
+unzip four-mechanisms-v4.1.2.zip -d /tmp/
 cd /tmp/four-mechanisms-generic
 bash install.sh
 ```
@@ -91,6 +91,117 @@ bash ~/.hermes/scripts/worker-ant-dashboard.sh
 ```
 
 **完成！** 你已经掌握了四规的基本用法。更多功能请参考下方各机制详解。
+
+---
+
+## 核心逻辑速查（一页纸）
+
+> 不想看长篇大论？看完这一页就够了。
+
+### 铁壁一：马诺防线 — 代码必须过三关
+
+```
+写完代码 → ruff(风格) → pytest(测试) → pre-commit(安全) → 通过才交付
+```
+
+**记住**：代码质量关 → 逻辑测试关 → 安全扫描关 → 用户验证
+
+### 铁壁二：图书馆 — 文档按5类存放
+
+```
+机制/（规则） | 方案/（设计） | 项目/（产出） | 会议/（纪要） | 备份/（存档）
+```
+
+**记住**：创建文档前先 `date` 确认日期，放到 `~/.hermes/tushuguan/` 对应分类下
+
+### 铁壁三：历史书 — 三层记忆
+
+```
+L1 MEMORY.md（每轮注入） → L2 Hindsight（按需recall） → L3 session_search（原始记录）
+```
+
+**记住**：重要信息存L1，经验教训存L2，原始对话在L3。Memory不会自动压缩，超80%需手动清理。
+
+### 铁壁四：工蚁 — 任务队列+进度看板
+
+```
+添加任务 → 关键词匹配Agent → Kanban持久化 → 看板可视化 → dispatcher自动执行
+```
+
+**记住**：`worker-ant-queue.sh add '任务'` 添加任务，`worker-ant-dashboard.sh` 看进度
+
+### 四规协作流程
+
+```
+用户任务 → 工蚁分配 → 马诺校验 → 图书馆存档 → 历史书记忆
+```
+
+---
+
+## 四规如何配合工作
+
+> 核心思路：四规不是四个独立工具，而是一个协同系统。
+
+```
+用户发起任务
+  ↓
+① 工蚁判断任务类型 → 分配给合适的Agent
+  ↓
+② 马诺防线校验代码质量 → 通过才交付
+  ↓
+③ 图书馆管理文档 → 按规范存放产出
+  ↓
+④ 历史书记录经验 → 下次会话自动recall
+```
+
+**一句话总结**：工蚁调度谁来做 → 马诺防线确保做得好 → 图书馆管好文档 → 历史书记住经验。
+
+### 各机制职责速查
+
+| 机制 | 一句话职责 | 什么时候用 |
+|------|-----------|-----------|
+| 马诺防线 | 代码写完必须过三关 | 写代码/改代码后 |
+| 图书馆 | 文档按5类规范存放 | 创建任何文档时 |
+| 历史书 | 记住重要信息，下次能找到 | 每次会话（自动） |
+| 工蚁 | 分配任务给合适的Agent | 多步骤任务时 |
+
+### 配合示例
+
+**场景：开发一个新功能**
+
+```bash
+# 1. 工蚁分配任务
+bash worker-ant-queue.sh add '实现用户注册API'
+# → 自动匹配给码仔(coder)
+
+# 2. 码仔写代码（马诺防线自动校验）
+# → ruff检查 → pytest测试 → pre-commit安全扫描
+
+# 3. 图书馆管理文档
+# → 设计文档放到 ~/.hermes/tushuguan/项目/xxx/
+# → 会议纪要放到 ~/.hermes/tushuguan/会议/
+
+# 4. 历史书记录经验
+# → 技术决策retain到Hindsight
+# → 下次会话自动recall
+```
+
+### 路径速查（所有路径都在 ~/.hermes/ 下）
+
+| 路径 | 用途 |
+|------|------|
+| `~/.hermes/skills/four-mechanisms/SKILL.md` | 四规技能文件 |
+| `~/.hermes/scripts/mano_*.sh` | 马诺防线脚本 |
+| `~/.hermes/scripts/worker-ant-*.sh` | 工蚁脚本 |
+| `~/.hermes/tushuguan/` | 图书馆根目录 |
+| `~/.hermes/tushuguan/机制/` | 机制文档 |
+| `~/.hermes/tushuguan/方案/` | 设计方案 |
+| `~/.hermes/tushuguan/项目/` | 项目产出 |
+| `~/.hermes/tushuguan/会议/` | 会议纪要 |
+| `~/.hermes/tushuguan/备份/` | 备份文件 |
+| `~/.hermes/memories/MEMORY.md` | L1记忆（热缓存） |
+| `~/.hermes/memories/USER.md` | 用户画像 |
+| `~/.hermes/SOUL.md` | 人格定义+四规加载指令 |
 
 ---
 
@@ -203,7 +314,7 @@ ls ~/.hermes/skills/four-mechanisms/references/
 
 ## 安装与部署
 
-**⚠️ 双平台支持**：v4.0.0 起，安装脚本自动检测 Hermes Agent 或 OpenClaw 并选择正确路径。发布包：`four-mechanisms-v4.1.1.zip`。
+**⚠️ 双平台支持**：v4.0.0 起，安装脚本自动检测 Hermes Agent 或 OpenClaw 并选择正确路径。发布包：`four-mechanisms-v4.1.2.zip`。
 
 ### 一键安装（推荐）
 
