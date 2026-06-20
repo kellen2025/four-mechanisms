@@ -1,7 +1,7 @@
 ---
 name: four-mechanisms
 description: "铁壁四规：马诺防线（代码三关校验）、图书馆（v4科学管理+日期准确性）、历史书（三层记忆L1/L2/L3+L2插件化）、工蚁（多Agent协作+OPC一人公司）。所有Agent必须遵守。"
-version: 3.5.0
+version: 3.6.0
 category: devops
 metadata:
   hermes:
@@ -776,21 +776,15 @@ zip -r skill-vX.Y.Z.zip . -x ".git/*" "VERSION" "LICENSE"
 | v3.3.0 | 2026-06-14 | 安装与部署章节重写：双平台支持（Hermes + OpenClaw），install.sh 自动检测平台并选择正确路径；安装路径对照表（Hermes vs OpenClaw）；验证命令分平台 |
 | v3.3.1 | 2026-06-16 | 新增 references/ima-api-auth-pattern.md：IMA API认证模式（自定义头+cursor分页+知识库ID表） |
 | v3.3.2 | 2026-06-16 | ima-api-auth-pattern.md 重大修正：info_list→knowledge_list、新增folder_id参数浏览文件夹、search limit修正为20、空query返回0结果、新增速率限制章节（~1000次/天但可能提前触发）、新增media_type枚举、新增目录结构说明、新增3个错误码 |
-| v3.3.3 | 2026-06-16 | 新增防循环陷阱（执行检查清单增加date命令、Pitfall Guard规则）；新增references/ima-api-rate-limiting.md（IMA限流机制）；新增references/loop-prevention-guard.md（bash通配符/BLOCKED重复/语法错误循环防护） |
-| v3.3.3 | 2026-06-17 | Memory管理章节增加Hermes官方默认限值对比（2200/1375字符）；新增references/hermes-official-memory-mechanism.md（官方Memory机制完整分析：冻结快照、安全扫描、write_approval、session_search分工、8个外部提供商）；变更日志格式修正 |
+| v3.3.3 | 2026-06-16 | 新增防循环陷阱（执行检查清单增加date命令、Pitfall Guard规则）；新增references/ima-api-rate-limiting.md（IMA限流机制）；新增references/loop-prevention-guard.md（bash通配符/BLOCKED重复/语法错误循环防护）；Memory管理章节增加Hermes官方默认限值对比（2200/1375字符）；新增references/hermes-official-memory-mechanism.md（官方Memory机制完整分析：冻结快照、安全扫描、write_approval、session_search分工、8个外部提供商）；变更日志格式修正 |
 | v3.3.4 | 2026-06-17 | references/hermes-official-memory-mechanism.md 增强：新增免费/付费提供商对比表、功能对比（软件开发视角）、互斥性说明、软件开发场景推荐（决策树+场景匹配）、本地LLM集成（架构分离、llama.cpp测试结果、配置示例）；新增关联文档指针：20260617_Memory管理机制优化方案.md |
 | v3.3.5 | 2026-06-17 | references/hermes-official-memory-mechanism.md 增强：明确local_embedded模式仍需HINDSIGHT_LLM_API_KEY；新增完整配置流程；新增Pitfall：配置修改需要用户批准。SKILL.md新增Pitfall：配置修改陷阱（展示命令而非直接执行） |
 | v3.3.6 | 2026-06-17 | references/hermes-official-memory-mechanism.md 新增第十二节：术语表（LLM API Key、local_embedded、冻结快照、FTS5、知识图谱、HRR、信任评分、反思综合、session_search的通俗解释）；SKILL.md新增Pitfall：术语解释陷阱（向用户解释技术方案时必须先通俗化专业术语） |
 | v3.3.7 | 2026-06-17 | references/hermes-official-memory-mechanism.md 新增：完整测试结果（92.5/100分）；新增Pitfall：Hindsight集成的Python环境问题（hindsight-client安装在venv但Hermes用系统Python）；新增Pitfall：hermes memory setup可能重置provider配置；SKILL.md新增Pitfall：hermes memory setup陷阱 |
-| v3.3.9 | 2026-06-16 | 铁壁二（图书馆）新增Pitfall：日期准确性陷阱——创建带日期文档前必须先 `date` 确认系统时间，Agent易误估日期导致文件名/frontmatter/INDEX全部错误 |
-| v3.4.0 | 2026-06-17 | references/hermes-official-memory-mechanism.md新增：Pitfall HuggingFace国内下载超时（三组件架构+镜像方案）；Pitfall dotenv路径陷阱（daemon CWD≠Hermes配置目录）；变更日志v1.4 |
-| v3.4.1 | 2026-06-17 | 新增用户风格铁律："分析优先，不逼选择"（先完整分析优缺点，再给建议，最后让用户决定）；新增references/memory-three-layer-architecture.md（三层架构设计速查卡）；关联文档新增Memory审计操作手册+三层架构方案 |
-| v3.5.0 | 2026-06-19 | 铁壁三更名为"历史书"、铁壁四更名为"工蚁"；新增用户铁律：历史问题必须先hindsight_recall()再回答（禁止凭空猜测）；新增references/trace-evaluation-system.md（SkillHub TRACE评测体系）；新增references/universal-skill-packaging.md（通用Skill打包模式） |
-| v3.3.9 | 2026-06-16 | 关联文档指针更新：新增Hindsight集成专项优化方案、时间校对检查清单、时间错误根因分析；日期准确性陷阱加强警告（用户指出"这已经不是第一次"）；references/hermes-official-memory-mechanism.md修正frontmatter日期 |
-| v3.4.0 | 2026-06-17 | 防循环陷阱强化：新增bash语法错误循环案例（`API_KEY=***`中`*`被解释为通配符）；新增用户反馈规则："你在干什么？为什么在无限循环测试？"→必须立即停止并报告；references/hermes-official-memory-mechanism.md新增：本地llama.cpp功能测试结果（116 tokens/秒）、Hindsight集成状态检查方法 |
-| v3.4.1 | 2026-06-17 | Memory管理新增三层架构设计（L1热缓存/L2温存储/L3冷存储）及准入标准；新增用户反馈：先分析后选择（呈现多方案时必须先完整分析，不要催促选择）；references/hermes-official-memory-mechanism.md新增v1.4：HuggingFace国内下载pitfall + dotenv路径陷阱 |
-| v3.5.0 | 2026-06-19 | 铁壁三架构总览改为"可插拔工具层"；新增概念澄清：铁壁四规与L2工具是"规范指定工具"关系而非"包含"关系；新增references/l2-pluggable-architecture.md（L2层可插拔架构设计方案：插件化、收益对比、实施步骤） |
-| v3.5.1 | 2026-06-19 | 新增references/trace-evaluation-framework.md（SkillHub TRACE评测体系T/R/A/C/E五维度）；新增references/memory-migration-lessons.md（记忆迁移教训：备份文件必须retain到L2、历史查询必须先recall） |
+| v3.3.9 | 2026-06-16 | 铁壁二（图书馆）新增Pitfall：日期准确性陷阱——创建带日期文档前必须先 `date` 确认系统时间，Agent易误估日期导致文件名/frontmatter/INDEX全部错误；关联文档指针更新：新增Hindsight集成专项优化方案、时间校对检查清单、时间错误根因分析；日期准确性陷阱加强警告（用户指出"这已经不是第一次"）；references/hermes-official-memory-mechanism.md修正frontmatter日期 |
+| v3.4.0 | 2026-06-17 | references/hermes-official-memory-mechanism.md新增：Pitfall HuggingFace国内下载超时（三组件架构+镜像方案）；Pitfall dotenv路径陷阱（daemon CWD≠Hermes配置目录）；变更日志v1.4；防循环陷阱强化：新增bash语法错误循环案例（`API_KEY=***`中`*`被解释为通配符）；新增用户反馈规则："你在干什么？为什么在无限循环测试？"→必须立即停止并报告；references/hermes-official-memory-mechanism.md新增：本地llama.cpp功能测试结果（116 tokens/秒）、Hindsight集成状态检查方法 |
+| v3.4.1 | 2026-06-17 | 新增用户风格铁律："分析优先，不逼选择"（先完整分析优缺点，再给建议，最后让用户决定）；新增references/memory-three-layer-architecture.md（三层架构设计速查卡）；关联文档新增Memory审计操作手册+三层架构方案；Memory管理新增三层架构设计（L1热缓存/L2温存储/L3冷存储）及准入标准；新增用户反馈：先分析后选择（呈现多方案时必须先完整分析，不要催促选择）；references/hermes-official-memory-mechanism.md新增v1.4：HuggingFace国内下载pitfall + dotenv路径陷阱 |
+| v3.5.0 | 2026-06-19 | 铁壁三更名为"历史书"、铁壁四更名为"工蚁"；新增用户铁律：历史问题必须先hindsight_recall()再回答（禁止凭空猜测）；新增references/trace-evaluation-system.md（SkillHub TRACE评测体系）；新增references/universal-skill-packaging.md（通用Skill打包模式）；铁壁三架构总览改为"可插拔工具层"；新增概念澄清：铁壁四规与L2工具是"规范指定工具"关系而非"包含"关系；新增references/l2-pluggable-architecture.md（L2层可插拔架构设计方案：插件化、收益对比、实施步骤） |
+| v3.5.1 | 2026-06-19 | 新增references/trace-evaluation-framework.md（SkillHub TRACE评测体系T/R/A/C/E五维度）；新增references/memory-migration-lessons.md（记忆迁移教训：备份文件必须retain到L2、历史查询必须先recall）；新增Pitfall：历史查询必须先recall；新增Pitfall：备份/会议纪要必须迁移关键信息到L2；新增references/daily-memory-consolidation.md（每日20:00三层记忆整理工作流）；新增references/hindsight-redundancy-management.md（冗余类型/评估标准/预防流程） |
 | v3.5.2 | 2026-06-19 | 铁壁二（图书馆）新增文件存放铁律：所有项目产出必须按图书馆分类存放（~/.hermes/tushuguan/项目/），禁止放到home根目录；新增检查清单（分类判断→路径验证→INDEX更新） |
 | v3.6.0 | 2026-06-20 | v0.17.0能力整合：铁壁四（工蚁）新增后台异步子代理规范；铁壁三（历史书）新增内存批量原子操作；铁壁一（马诺防线）新增read_file提取.ipynb/.docx/.xlsx能力；铁壁二（图书馆）新增文件系统回滚保护；新增references/v0.17-new-capabilities.md；启用video_gen工具（Agnes Video V2.0） |
-| v3.5.1 | 2026-06-19 | 新增Pitfall：历史查询必须先recall（用户提到历史话题时必须先hindsight_recall再回答）；新增Pitfall：备份/会议纪要必须迁移关键信息到L2（设计决策/技术权衡/用户纠正需retain）；新增references/daily-memory-consolidation.md（每日20:00三层记忆整理工作流）；新增references/hindsight-redundancy-management.md（冗余类型/评估标准/预防流程） |
